@@ -1,0 +1,15 @@
+{
+  "name": "scraping-using-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ankit Jain (ankitjain28may77@gmail.com)",
+  "license": "ISC",
+  "dependencies": {
+    "x-ray": "^2.3.2",
+    "x-ray-phantom": "^1.0.1"
+  }
+}
