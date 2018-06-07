@@ -7,9 +7,6 @@ x('https://www.amazon.in/Men-Watches/b/ref=sd_allcat_sbc_mfashion_watches?ie=UTF
   price: 'div.s-item-container div.a-row.a-spacing-none div:nth-child(3)',
   link: 'div.s-item-container div.a-row.a-spacing-none div.a-row.a-spacing-mini:first-child a@href'
 }])
-(function(err, obj){
-    console.log("Hello");
-})
-  .paginate('#search-results div#bottomBar div#pagn span.pagnRA a')
+  .paginate('#pagnNextLink@href')
   .limit(3)
   .write('results.json')
