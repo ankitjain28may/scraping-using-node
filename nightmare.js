@@ -5,19 +5,19 @@ const fs = require('fs');
 
 // ************ gotoURL ****************
 
-gotoUrl = function(url) {
-  return nightmare
-    .goto(url)
-    .title()
-    // .wait('#dp-container')
-    // .evaluate(() => document.querySelector('#dp-container').innerHTML))
-    // .then(function(body) {
-    //   return body
-    // })
-    // .catch(error => {
-    //   console.error('Search failed:', error)
-    // }))
-    // )
+function gotoUrl(url) {
+  return new Promise((resolve, reject) => {
+    nightmare
+      .goto(url)
+      .title()
+      .then((data) => {
+          resolve(data)
+      })
+      .catch((err) => {
+          reject(err);
+          return;
+      })
+  })
 }
 
 // **** Need to write further pagination function and others functions*************
@@ -67,24 +67,15 @@ gotoUrl = function(url) {
 
 // *****************Not Working*************
 
-readCategory = function(category = '') {
-  fs.readFile('amazon_categories.json', (err, data) => {
+readCategory =async function(category = '') {
+  fs.readFile('amazon_categories.json',async (err, data) => {
     var Categories = JSON.parse(data);
-    ca = [];
+    data = []
     if (category != '') {
-      const promises = Promise.all(Categories[category].forEach(async (ele) => {
-        try {
-          const data = await nightmare
-            .goto(ele.link)
-            .title()
-          return data;
-        }
-        catch (e) {
-          console.log(e);
-        }
-      })).then((data) =>
-        console.log(data)
-      ).catch((err) => console.log(err));
+      for (var i = Categories[category].length - 1; i >= 0; i--) {
+        const res = await gotoUrl(Categories[category][i].link);
+        console.log(res);
+      }
     }
   });
 }
@@ -161,3 +152,21 @@ readCategory('Echo & Alexa');
 // addAsync(10).then((sum) => {
 //   console.log(sum);
 // });
+//
+
+// function a() {
+//     a = [1, 2, 3, 4]
+//     const promise = Promise.all(a.map(async (ele) => {
+//         try {
+//             const data = await nightmare
+//                 .goto('https://google.com')
+//                 .title()
+//         }
+//         catch (e) {
+//             console.log(e)
+//         }
+//     })).then((data) =>
+//         console.log(data)
+//       ).catch((err) => console.log(err));
+// }
+// a()
