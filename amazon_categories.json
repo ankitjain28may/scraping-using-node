@@ -1,16 +1,44 @@
 {
   "Echo & Alexa": [
     {
+      "title": "Echo Dot",
+      "link": "https://www.amazon.in/dp/B071NB4PGV/ref=sd_allcat_shopall_biscuit/260-0319244-6767707"
+    },
+    {
+      "title": "Amazon Echo",
+      "link": "https://www.amazon.in/dp/B0725W7Q38/ref=sd_allcat_shopall_radar/260-0319244-6767707"
+    },
+    {
+      "title": "Introducing: Echo Spot",
+      "link": "https://www.amazon.in/dp/B01J6A7FGQ/ref=sd_allcat_shopall_radar/260-0319244-6767707"
+    },
+    {
+      "title": "Echo Plus",
+      "link": "https://www.amazon.in/dp/B01J4IY6X0/ref=sd_allcat_shopall_sonar/260-0319244-6767707"
+    },
+    {
+      "title": "See all devices with Alexa",
+      "link": "https://www.amazon.in/b/ref=sd_allcat_shopall_catpage/260-0319244-6767707?ie=UTF8&node=14156834031"
+    },
+    {
+      "title": "Meet Alexa",
+      "link": "https://www.amazon.in/b/ref=sd_allcat_shopall_meetalexa/260-0319244-6767707?ie=UTF8&node=14172468031"
+    },
+    {
+      "title": "Alexa Skills",
+      "link": "https://www.amazon.in/alexa-skills/b/ref=sd_allcat_shopall_a2s_help/260-0319244-6767707?ie=UTF8&node=11928183031"
+    },
+    {
       "title": "Alexa App",
-      "link": "https://google.com"
+      "link": "https://www.amazon.in/gp/help/customer/display.html/ref=sd_allcat_shopall_alexa_app/260-0319244-6767707?ie=UTF8&nodeId=201549920"
     },
     {
       "title": "Alexa Smart Home",
-      "link": "https://gmail.com"
+      "link": "https://www.amazon.in/b/ref=sd_allcat_shopall_echo_smarthome/260-0319244-6767707?ie=UTF8&node=14095180031"
     },
     {
       "title": "Amazon Prime Music",
-      "link": "https://drive.google.com"
+      "link": "http://www.amazon.in/music/prime?ref=dmm_in_nav_pc_alexa_mlp"
     }
   ],
   "Amazon Fire TV Stick": [
