@@ -39,5 +39,6 @@ function gotoUrl(url) {
         const data = await gotoUrl('await');
         results.push(data);
     }
+    await nightmare.end();
     console.log(results);
 })()

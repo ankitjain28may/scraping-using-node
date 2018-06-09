@@ -1,7 +1,12 @@
 const Nightmare = require('nightmare')
-const nightmare = Nightmare({ show: true })
 const cheerio = require('cheerio');
 const fs = require('fs');
+const nightmare = Nightmare({
+  switches: {
+    'https': '51.15.227.220:3128' // set the proxy server here ...
+  },
+  show: true
+})
 
 // ************ gotoURL ****************
 
@@ -9,9 +14,22 @@ function gotoUrl(url) {
   return new Promise((resolve, reject) => {
     nightmare
       .goto(url)
-      .title()
-      .then((data) => {
-          resolve(data)
+      .wait('body')
+      .evaluate(() => {
+        return document.querySelector('body').innerHTML
+      })
+      .then(async (data) => {
+          try {
+            const result = await fetchUrl(data);
+            const next = await paginate(data, 'a#pagnNextLink')
+            results = {
+              "urls": result,
+              "next": next
+            }
+            resolve(results)
+          } catch (err) {
+            console.log(err);
+          }
       })
       .catch((err) => {
           reject(err);
@@ -19,6 +37,36 @@ function gotoUrl(url) {
       })
   })
 }
+fetchUrl = function (html) {
+  const $ = cheerio.load(html);
+  var links = [];
+  try {
+    $('#mainResults ul.s-result-list li, #atfResults ul.s-result-list li').each(function(i, elem) {
+      var link = $(elem).find('div.s-item-container div.a-row:nth-child(3) > div a').attr('href');
+      if (link) {
+        links.push(link);
+      }
+    });
+    return links;
+  } catch (e) {
+    console.log("Not found");
+    return;
+  }
+}
+paginate = function (html, selector) {
+  const $ = cheerio.load(html);
+  var links = [];
+  if ($(selector).length) {
+    var next = {
+      page: "https://www.amazon.in" + $(selector).attr('href'),
+      total: $(".pagnDisabled").text(),
+      current: $(".pagnCur").text()
+    }
+    return next;
+  }
+  return {page: false};
+}
+
 
 // **** Need to write further pagination function and others functions*************
 
@@ -29,10 +77,6 @@ function gotoUrl(url) {
 
 // }
 
-// paginate = function (url, selector) {
-//   // nightmare
-//   return url
-// }
 //
 
 // *****************Working*************
@@ -67,15 +111,51 @@ function gotoUrl(url) {
 
 // *****************Not Working*************
 
-readCategory =async function(category = '') {
+isProductUrl = function (url) {
+  const patten = '/dp/';
+  if (url.indexOf(patten) > 0) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+readCategory = function(category = '', limit = 5) {
   fs.readFile('amazon_categories.json',async (err, data) => {
     var Categories = JSON.parse(data);
-    data = []
+    totalUrls = {
+      'urls': []
+    }
     if (category != '') {
       for (var i = Categories[category].length - 1; i >= 0; i--) {
-        const res = await gotoUrl(Categories[category][i].link);
-        console.log(res);
+        var pageUrl = Categories[category][i].link;
+        var maxPage = limit;
+        var pagnCur = 0;
+        while(pagnCur <= maxPage) {
+          const isUrl = await isProductUrl(pageUrl);
+          if (!isUrl) {
+            try {
+              const urls = await gotoUrl(pageUrl);
+              if (urls.next.page) {
+                pageUrl = urls.next.page;
+                Array.prototype.push.apply(totalUrls.urls, urls.urls);
+                // totalUrls.urls.push(urls.urls);
+                pagnCur = Number(urls.next.current) + 1;
+                if (!limit) {
+                  maxPage = Number(urls.next.total);
+                }
+              } else {
+                break;
+              }
+            } catch (err) {
+              console.log(err);
+            }
+          }
+        }
       }
+      await nightmare.end();
+      fs.writeFileSync('Amazon/urls.json', JSON.stringify(totalUrls, null, 2));
     }
   });
 }
@@ -115,7 +195,7 @@ scrapeAllCategories = function (html, callback) {
 
 // scraper('https://www.amazon.in/gp/site-directory');
 
-readCategory('Echo & Alexa');
+readCategory("Men's Fashion");
 //
 
 // *****************Useless (Rough) *************
