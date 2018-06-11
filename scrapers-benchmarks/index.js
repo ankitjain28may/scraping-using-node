@@ -1,16 +1,16 @@
 const subjects = [
-  'request',
-  // 'zombie',
-  'puppeteer',
-  'phantom',
-  'nightmare',
+  // 'request',
+  'zombie',
+  // 'puppeteer',
+  // 'phantom',
+  // 'nightmare',
 ].map(name => ({ name, fn: require('./' + name) }));
 
 async function runOnce() {
   const result = {};
   for (let i = 0; i < subjects.length; i++) {
     const { name, fn } = subjects[i];
-    console.log("Running " + name);
+    // console.log("Running " + name);
     const start = new Date();
     await fn();
     // console.log(data);

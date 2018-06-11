@@ -1,12 +1,18 @@
 const Nightmare = require('nightmare')
 const cheerio = require('cheerio');
 const fs = require('fs');
+const amazon_categories = require('../results/amazon_categories.json');
+const path = require("path");
+
 const nightmare = Nightmare({
   switches: {
     'https': '51.15.227.220:3128' // set the proxy server here ...
   },
-  show: true
-})
+  show: true,
+  webPreferences: {
+    images: false
+  }
+});
 
 // ************ gotoURL ****************
 
@@ -122,7 +128,7 @@ isProductUrl = function (url) {
 }
 
 readCategory = function(category = '', limit = 5) {
-  fs.readFile('amazon_categories.json',async (err, data) => {
+  fs.readFile(path.resolve(__dirname, "../results/amazon_categories.json"), 'utf8', async (err, data) => {
     var Categories = JSON.parse(data);
     totalUrls = {
       'urls': []
@@ -196,6 +202,7 @@ scrapeAllCategories = function (html, callback) {
 // scraper('https://www.amazon.in/gp/site-directory');
 
 readCategory("Men's Fashion");
+
 //
 
 // *****************Useless (Rough) *************
