@@ -4,6 +4,7 @@ namespace Drupal\affiliates_connect_flipkart\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\affiliates_connect\Form\AffiliatesConnectSettingsForm;
+use Drupal\affiliates_connect_flipkart\Controller\FlipkartNativeController;
 
 /**
  * Class AffiliatesFlipkartSettingsForm.
@@ -142,6 +143,13 @@ class AffiliatesFlipkartSettingsForm extends AffiliatesConnectSettingsForm {
         ],
       ],
     ];
+
+    $form['flipkart_settings']['data_storage_form']['submit'] = [
+      '#type' => 'submit',
+      '#name' => 'native_import',
+      '#value' => $this->t('Import Now'),
+    ];
+
 
     $form['flipkart_settings']['data_storage_form']['scraper_import'] = [
       '#type' => 'select',
@@ -307,6 +315,36 @@ class AffiliatesFlipkartSettingsForm extends AffiliatesConnectSettingsForm {
       ->set('others', $values['others'])
       ->save();
     parent::submitForm($form, $form_state);
+
+    $fk_affiliate_id = $values['flipkart_tracking_id'];
+    $token = $values['flipkart_token'];
+    $button_clicked = $form_state->getTriggeringElement()['#name'];
+
+    if ($button_clicked == 'native_import') {
+      $batch = [];
+      $this->startBatchImporting($fk_affiliate_id, $token);
+      // batch_set($batch);
+    }
+
+  }
+
+  public function startBatchImporting($fk_affiliate_id, $token) {
+
+    // drupal_set_message($this->t('Importing data from Flipkart Affiliate APIs'));
+    $flipkart_native = new FlipkartNativeController();
+    $categories = $flipkart_native->categories();
+    $total_categories = count($categories);
+    $batch = [];
+    foreach ($categories as $key => $value) {
+      $batch = [
+        'title' => t('Importing products from @num categories', ['@num' => $total_categories]),
+        'init_message' => $this->t('Importing Category: %title', ['%title' => $key]),
+        'operations' => [[['\Drupal\affiliates_connect_flipkart\Controller\FlipkartNativeController', 'products'], [$value, $fk_affiliate_id, $token]]],
+        'progress_message' => $this->t('Importing Category: %title', ['%title' => $key]),
+        'finished' => 'batch_finished',
+      ];
+      batch_set($batch);
+    }
   }
 
 }
