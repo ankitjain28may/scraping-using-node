@@ -51,12 +51,12 @@ class FlipkartNativeController extends ControllerBase {
       throw new \RuntimeException($this->t('This %site seems to be broken because of error "%error".', $args));
     }
     $body = $response->getBody();
-    $result = json_decode($body, true);
-    foreach ($result['apiGroups']['affiliate']['apiListings'] as $key => $value) {
-      echo $key . "\n";
+    $body = json_decode($body, true);
+    $categories = [];
+    foreach ($body['apiGroups']['affiliate']['apiListings'] as $key => $value) {
+      $categories[$key] = $value['availableVariants']['v1.1.0']['get'];
     }
-    // return;
+    print_r($categories);
   }
 
 }
-
