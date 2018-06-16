@@ -11,9 +11,9 @@ Benchmarking various scrapers for Amazon Scraping
 [phantom]: https://github.com/Medium/phantomjs
 [nightmare]: https://github.com/segmentio/nightmare
 
-```
 > Zombie is not loading the content of Amazon website showing error while loading amazon.in
 
+```
 npm install
 
 node index.js
@@ -27,3 +27,4 @@ Average: { request: 4765, puppeteer: 16632,  phantom: 14442,  nightmare: 17297 }
 
 
 ```
+Some more reference images added of the benchmarks `Test1.png` and `Test2.png`
