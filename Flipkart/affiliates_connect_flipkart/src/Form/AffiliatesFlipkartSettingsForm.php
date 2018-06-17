@@ -322,28 +322,45 @@ class AffiliatesFlipkartSettingsForm extends AffiliatesConnectSettingsForm {
 
     if ($button_clicked == 'native_import') {
       $batch = [];
-      $this->startBatchImporting($fk_affiliate_id, $token);
-      // batch_set($batch);
-    }
-
-  }
-
-  public function startBatchImporting($fk_affiliate_id, $token) {
-
-    // drupal_set_message($this->t('Importing data from Flipkart Affiliate APIs'));
-    $flipkart_native = new FlipkartNativeController();
-    $categories = $flipkart_native->categories();
-    $total_categories = count($categories);
-    $batch = [];
-    foreach ($categories as $key => $value) {
+      $flipkart_native = new FlipkartNativeController();
+      $categories = $flipkart_native->categories();
+      $total_categories = count($categories);
+      $con = 0;
+      foreach ($categories as $key => $value) {
+        $operations[] = [[$this, 'startBatchImporting'], [$key, $value]];
+      }
       $batch = [
         'title' => t('Importing products from @num categories', ['@num' => $total_categories]),
-        'init_message' => $this->t('Importing Category: %title', ['%title' => $key]),
-        'operations' => [[['\Drupal\affiliates_connect_flipkart\Controller\FlipkartNativeController', 'products'], [$value, $fk_affiliate_id, $token]]],
-        'progress_message' => $this->t('Importing Category: %title', ['%title' => $key]),
-        'finished' => 'batch_finished',
+        'init_message' => $this->t('Importing..'),
+        'operations' => $operations,
+        'progressive' => TRUE,
+        'finished' => [$this, 'batchFinished'],
+        'batch_rediect' => '/admin/config/affiliates-connect/overview',
       ];
       batch_set($batch);
+    }
+  }
+
+  /**
+   * Batch for Importing of products.
+   */
+  public function startBatchImporting($key, $value, &$context) {
+    $flipkart_native = new FlipkartNativeController();
+    $categories = $flipkart_native->products($value);
+    $context['results']['processed']++;
+    $context['message'] = 'Completed importing category : ' . $key;
+  }
+
+  /**
+   * Batch finished callback.
+   */
+  public function batchFinished($success, $results, $operations) {
+    if ($success) {
+     drupal_set_message($this->t("The products are successfully imported from flipkart."));
+    }
+    else {
+      $error_operation = reset($operations);
+      drupal_set_message($this->t('An error occurred while processing @operation with arguments : @args', array('@operation' => $error_operation[0], '@args' => print_r($error_operation[0], TRUE))));
     }
   }
 

@@ -68,20 +68,21 @@ class FlipkartNativeController extends ControllerBase {
     return $categories;
   }
 
-  public function products($product_url, $fk_affiliate_id, $token)
+  public function products($product_url)
   {
-    $client = new Client();
+
+    $fk_affiliate_id = $this->config('affiliates_connect_flipkart.settings')->get('flipkart_tracking_id');
+    $token = $this->config('affiliates_connect_flipkart.settings')->get('flipkart_token');
 
     $header = [
       'Fk-Affiliate-Id' => $fk_affiliate_id,
       'Fk-Affiliate-Token' => $token,
       'Accept' => 'application/json',
     ];
-    $response = $client->get($product_url, ['headers' => $header]);
+    $response = $this->get($product_url, ['headers' => $header]);
     $products_data = $response->getBody();
     $products_data = json_decode($products_data, true);
     foreach ($products_data['products'] as $key => $value) {
-
       try {
         $uid = \Drupal::currentUser()->id();
 
