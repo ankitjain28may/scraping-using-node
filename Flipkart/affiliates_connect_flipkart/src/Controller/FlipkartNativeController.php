@@ -22,10 +22,15 @@ class FlipkartNativeController extends ControllerBase {
 
 
   /**
-   * Render the list of plugins for a affiliates network.
+   * Collect response from the url.
    *
-   * @return array
-   *   Render array listing the integrations.
+   * @param string $url
+   *   An url where request is to be made
+   * @param  array $options
+   *   Containing headers
+   *
+   * @return \Guzzle\Http\Message\Response
+   *   A Guzzle response.
    */
   public function get($url, $options) {
 
@@ -38,12 +43,15 @@ class FlipkartNativeController extends ControllerBase {
       $args = ['%site' => $url, '%error' => $e->getMessage()];
       throw new \RuntimeException($this->t('This %site seems to be broken because of error "%error".', $args));
     }
-
     return $response;
-
-
   }
 
+  /**
+   * Fetching categories from the Category API.
+   *
+   * @return array
+   *   A collection of categories along with category url
+   */
   public function categories()
   {
     $fk_affiliate_id = $this->config('affiliates_connect_flipkart.settings')->get('flipkart_tracking_id');
@@ -68,6 +76,12 @@ class FlipkartNativeController extends ControllerBase {
     return $categories;
   }
 
+  /**
+   * Collect products data from Product APIs.
+   *
+   * @param string $product_url
+   *   An url where request is to be made
+   */
   public function products($product_url)
   {
 
@@ -118,7 +132,4 @@ class FlipkartNativeController extends ControllerBase {
       }
     }
   }
-
-
 }
-
