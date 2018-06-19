@@ -14,17 +14,27 @@ app.get('/', (req, res) => {
 
 app.post('/get-static' ,async (req, res) => {
   var url = req.body.url;
-  var headers;
-  var data;
-  await rp({
-    uri: url,
-    method: 'GET',
-    resolveWithFullResponse: true
-  }).then((response) => {
-    headers = response.headers;
-    data = response.body;
-  });
-  res.send(JSON.stringify({'body': data, 'headers': headers}));
+  var results = {
+    'status': '',
+    'response': {},
+    'error': {}
+  };
+  try {
+    await rp({
+      uri: url,
+      method: 'GET',
+      resolveWithFullResponse: true
+    }).then((response) => {
+      results.status = true;
+      results.response = response;
+    });
+  }
+  catch(err)  {
+    results.status = false;
+    results.error = err;
+  }
+
+  res.send(JSON.stringify(results));
 });
 
 
