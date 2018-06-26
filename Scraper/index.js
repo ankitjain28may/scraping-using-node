@@ -5,8 +5,8 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 9000;
 
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(bodyParser.json({limit: '50mb'})); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' })); // support encoded bodies
 
 app.get('/', (req, res) => {
   res.send("Node Server for Affiliates Connect Module");
@@ -22,34 +22,52 @@ app.post('/get-static' ,async (req, res) => {
   var context = req.body.options.context;
   var link_selector = req.body.options.link_selector;
   var inner_page_selector = req.body.options.inner_page_selector;
+  var break_in_parts = req.body.options.break_in_parts;
+  var no_of_parts = req.body.options.no_of_parts;
+  var left_html = req.body.options.left_html;
+  var inner_feeds_scraper = req.body.options.inner_feeds_scraper;
 
   var results = {
     'status': '',
     'response': {},
     'error': {},
+    'left': '',
+    'left_html': ''
   };
   try {
-    await rp({
-      uri: url,
-      method: 'GET',
-      resolveWithFullResponse: true
-    }).then(async (response) => {
-      results.status = true;
-      results.response = response;
-      [links, results.response.body] = getLink(response.body, context, link_selector);
-      console.timeEnd("Start");
-      console.time("Start-ALL");
+    if (break_in_parts && left_html != "") {
+      console.log("Running for Left-over links");
+      results.response.body = left_html;
+      results.response.statusCode = 200;
+    } else {
+      await rp({
+        uri: url,
+        method: 'GET',
+        resolveWithFullResponse: true
+      }).then(async (response) => {
+        results.response = response;
+      });
+      console.log("Fetching");
+    }
+    [links] = getLink(results.response.body, context, link_selector, break_in_parts, no_of_parts);
+    console.log(links);
+    console.timeEnd("Start");
+    if (inner_feeds_scraper) {
+      console.time("Start-InnerFetching");
       const body = await Promise.all(links.map(url =>
         rp(url)
       )).then(values => {
         return values;
       });
       console.log("Done--");
-      console.timeEnd("Start-ALL");
+      console.timeEnd("Start-InnerFetching");
       console.time("Appending");
-      results.response.body = getInnerPage(results.response.body, context, body, inner_page_selector);
+      [results.response.body, results.left_html, results.left] = getInnerPage(results.response.body, context, body, inner_page_selector, break_in_parts, no_of_parts);
+      console.log(results.left);
       console.timeEnd("Appending");
-    });
+    }
+
+    results.status = true;
   }
   catch(err)  {
     results.status = false;
@@ -58,34 +76,45 @@ app.post('/get-static' ,async (req, res) => {
   res.send(JSON.stringify(results));
 });
 
-getLink = function (html, context, link_selector) {
+getLink = function (html, context, link_selector, break_in_parts, no_of_parts) {
   var selector = context + " " + link_selector;
   var links = [];
-  var body = "";
+
   const $ = cheerio.load(html);
   try {
     $(selector).each(function(i, elem) {
-      link = $(elem).attr('href');
-      links.push(link);
+      if (break_in_parts && i >= no_of_parts) {
+        return;
+      } else {
+        link = $(elem).attr('href');
+        links.push(link);
+      }
     });
-    return [links, $.html(context)];
+    return [links];
   } catch (e) {
     console.log(e);
   }
 }
 
-getInnerPage = function (html, selector, pages, inner_page_selector) {
+getInnerPage = function (html, selector, pages, inner_page_selector, break_in_parts, no_of_parts) {
   const $ = cheerio.load(html);
   $('script').remove();
   var new_html = "";
+  var left_html = "";
+  var left = 0;
   try {
     $(selector).each(function(i, elem) {
-      const $c = cheerio.load(pages[i]);
+      if (break_in_parts && i >= no_of_parts) {
+        left_html = left_html + $.html(elem);
+        left += 1;
+      } else {
+        const $c = cheerio.load(pages[i]);
         $c('script').remove();
         $(this).append('<affiliatesconnect>' + $c(inner_page_selector).html() + '</affiliatesconnect');
         new_html += $.html(elem);
+      }
     });
-    return new_html;
+    return [new_html, left_html, left];
   } catch (e) {
     console.log(e);
   }
